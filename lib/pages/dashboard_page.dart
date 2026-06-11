@@ -6,7 +6,7 @@ class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Floating Action Button (+)
+      // Floating Action Button (+) di kanan bawah
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.green,
         onPressed: () {
@@ -14,7 +14,7 @@ class DashboardPage extends StatelessWidget {
         },
         child: const Icon(Icons.add, color: Colors.white),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
 
       // Bottom Navigation Bar sesuai gambar
       bottomNavigationBar: BottomAppBar(
@@ -39,7 +39,6 @@ class DashboardPage extends StatelessWidget {
                 Text("Catatan", style: TextStyle(fontSize: 12)),
               ],
             ),
-            const SizedBox(width: 40), // space untuk FAB
             // Jadwal
             Column(
               mainAxisSize: MainAxisSize.min,
@@ -85,7 +84,7 @@ class DashboardPage extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               const Text(
-                "Yuk, tingkatkan hasil panen kamu 🌾",
+                "Yuk, tingkatkan hasil panen kamu 👋",
                 style: TextStyle(fontSize: 16, color: Colors.black54),
               ),
               const SizedBox(height: 20),
