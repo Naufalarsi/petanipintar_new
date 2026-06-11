@@ -6,20 +6,23 @@ class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Floating Action Button (+) di kanan bawah
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.green,
-        onPressed: () {
-          // aksi tambah catatan/jadwal
-        },
-        child: const Icon(Icons.add, color: Colors.white),
+      // Floating Action Button (+) di kanan bawah agak naik
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 20), // geser ke atas biar tidak menempel
+        child: FloatingActionButton(
+          backgroundColor: Colors.green,
+          onPressed: () {
+            // aksi tambah catatan/jadwal
+          },
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
 
-      // Bottom Navigation Bar sesuai gambar
+      // Bottom Navigation Bar flat putih (canvas tetap ada)
       bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8,
+        color: Colors.white, // canvas putih
+        elevation: 8,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
