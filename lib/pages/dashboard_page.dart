@@ -6,20 +6,23 @@ class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Floating Action Button (+)
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.green,
-        onPressed: () {
-          // aksi tambah catatan/jadwal
-        },
-        child: const Icon(Icons.add, color: Colors.white),
+      // Floating Action Button (+) di kanan bawah agak naik
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 20), // geser ke atas biar tidak menempel
+        child: FloatingActionButton(
+          backgroundColor: Colors.green,
+          onPressed: () {
+            // aksi tambah catatan/jadwal
+          },
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
 
-      // Bottom Navigation Bar sesuai gambar
+      // Bottom Navigation Bar flat putih (canvas tetap ada)
       bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8,
+        color: Colors.white, // canvas putih
+        elevation: 8,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -39,7 +42,6 @@ class DashboardPage extends StatelessWidget {
                 Text("Catatan", style: TextStyle(fontSize: 12)),
               ],
             ),
-            const SizedBox(width: 40), // space untuk FAB
             // Jadwal
             Column(
               mainAxisSize: MainAxisSize.min,
@@ -85,7 +87,7 @@ class DashboardPage extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               const Text(
-                "Yuk, tingkatkan hasil panen kamu 🌾",
+                "Yuk, tingkatkan hasil panen kamu 👋",
                 style: TextStyle(fontSize: 16, color: Colors.black54),
               ),
               const SizedBox(height: 20),
