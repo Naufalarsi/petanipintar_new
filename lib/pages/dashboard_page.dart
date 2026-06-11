@@ -27,8 +27,8 @@ class _DashboardPageState extends State<DashboardPage> {
             child: Container(
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  // TODO: Ganti dengan path asset bg dashboard kamu
-                  image: AssetImage('assets/images/bgdashboard.jpg'), 
+                  // Pastikan nama file ini benar ada di folder assets/images/
+                  image: AssetImage('assets/images/bgdashboard.png'), 
                   fit: BoxFit.cover,
                   alignment: Alignment.topCenter,
                 ),
@@ -61,10 +61,9 @@ class _DashboardPageState extends State<DashboardPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // TODO: Ganti dengan path asset logo PNG Petani Pintar kamu
                       Image.asset(
                         'assets/images/petanifont.png', 
-                        height: 50,
+                        height: 100,
                         errorBuilder: (context, error, stackTrace) => Text(
                           "🌱 Petani\n     Pintar",
                           style: TextStyle(
@@ -82,9 +81,9 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                         child: const CircleAvatar(
                           radius: 26,
-                          // TODO: Masukkan asset foto profil
-                          backgroundImage: AssetImage('assets/profile.jpg'), 
                           backgroundColor: Colors.grey,
+                          // Menggunakan Icon sementara karena belum ada foto profil
+                          child: Icon(Icons.person, color: Colors.white, size: 30), 
                         ),
                       ),
                     ],
@@ -169,13 +168,8 @@ class _DashboardPageState extends State<DashboardPage> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        // Gunakan warna solid kebiruan jika asset gambar awan tidak ada
         color: const Color(0xFF4FA8E0),
-        image: const DecorationImage(
-          // TODO: Ganti dengan background awan jika ada
-          image: AssetImage('assets/bg_weather.jpg'), 
-          fit: BoxFit.cover,
-        ),
+        // Bagian image awan dihapus sementara agar tidak error
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -183,7 +177,7 @@ class _DashboardPageState extends State<DashboardPage> {
             offset: const Offset(0, 4),
           ),
         ],
-        border: Border.all(color: Colors.white, width: 2), // Efek border putih tipis di desain
+        border: Border.all(color: Colors.white, width: 2), 
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,7 +205,6 @@ class _DashboardPageState extends State<DashboardPage> {
                   ]
                 ),
               ),
-              // Icon matahari dan awan (menggunakan icon standar)
               Icon(Icons.cloud, color: Colors.yellow[600], size: 70), 
             ],
           ),
@@ -319,7 +312,7 @@ class _DashboardPageState extends State<DashboardPage> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _buildNavItem(Icons.home, "Dashboard", true),
-          _buildNavItem(Icons.movie_creation_outlined, "Catatan", false), // Icon mirip clapperboard/catatan
+          _buildNavItem(Icons.movie_creation_outlined, "Catatan", false), 
           _buildNavItem(Icons.calendar_today_rounded, "Jadwal", false),
           _buildNavItem(Icons.lightbulb_outline, "Tips", false),
           _buildNavItem(Icons.person_outline, "Profil", false),
