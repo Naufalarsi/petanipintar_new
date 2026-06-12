@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'catatan/catatan.dart'; 
 import 'catatan/tambah_catatan.dart'; 
 import '../database/db_helper.dart'; // Import DBHelper agar Dashboard bisa baca SQLite
+import 'jadwal/jadwal.dart'; // Import JadwalPage untuk navigasi dari FAB
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({Key? key}) : super(key: key);
