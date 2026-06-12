@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'catatan/catatan.dart'; 
 import 'catatan/tambah_catatan.dart'; 
 import '../database/db_helper.dart'; // Import DBHelper agar Dashboard bisa baca SQLite
-import 'jadwal/jadwal.dart';
-import 'tips/tips.dart'; // Import JadwalPage untuk navigasi dari FAB
+import 'jadwal/jadwal.dart'; // Import JadwalPage untuk navigasi dari FAB
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({Key? key}) : super(key: key);
@@ -122,7 +121,7 @@ class _DashboardPageState extends State<DashboardPage> {
       _buildDashboardHome(), // Index 0: Dashboard Home
       const CatatanPage(),   // Index 1: Halaman Catatan
       const Center(child: Text("Halaman Jadwal")), // Index 2
-      const TipsPage(),// Index 3
+      const Center(child: Text("Halaman Tips")),   // Index 3
       const Center(child: Text("Halaman Profil")), // Index 4
     ];
 
