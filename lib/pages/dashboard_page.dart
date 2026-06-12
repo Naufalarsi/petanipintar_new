@@ -5,6 +5,7 @@ import 'catatan/tambah_catatan.dart';
 import '../database/db_helper.dart'; // Import DBHelper agar Dashboard bisa baca SQLite
 import 'jadwal/jadwal.dart';
 import 'tips/tips.dart'; // Import JadwalPage untuk navigasi dari FAB
+import 'jadwal/tambah_jadwal.dart'; // Import TambahJadwalPage untuk navigasi dari FAB  
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({Key? key}) : super(key: key);

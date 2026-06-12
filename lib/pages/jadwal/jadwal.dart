@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../database/db_helper.dart'; // Jalur naik 2 tingkat ke folder database, sesuaikan jika berbeda
-// import 'tambah_jadwal.dart'; // Buka comment ini jika sudah ada file tambah jadwal
+import 'tambah_jadwal.dart'; // Buka comment ini jika sudah ada file tambah jadwal
 
 class JadwalPage extends StatefulWidget {
   const JadwalPage({Key? key}) : super(key: key);
@@ -98,12 +98,11 @@ class _JadwalPageState extends State<JadwalPage> {
                 onPressed: () {
                   // Jalur navigasi ke form tambah jadwal kamu
                   print("Navigasi ke Tambah Jadwal");
-                  /*
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const TambahJadwalPage()),
                   ).then((value) => refreshData());
-                  */
+                  
                 },
                 icon: const Icon(Icons.add, color: Colors.white, size: 28),
                 label: const Text("Tambah Jadwal", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
