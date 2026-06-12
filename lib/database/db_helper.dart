@@ -109,4 +109,36 @@ class DBHelper {
     final db = await openDB();
     return await db.query('User');
   }
+
+  // ==========================================
+  // TAMBAHAN FUNGSI UNTUK CATATAN (AKTIVITAS)
+  // ==========================================
+
+  // Insert data catatan baru
+  static Future<int> insertCatatan(Map<String, dynamic> data) async {
+    final db = await openDB();
+    return await db.insert('Catatan', data);
+  }
+
+  // Ambil semua data catatan, diurutkan dari yang terbaru (DESC)
+  static Future<List<Map<String, dynamic>>> getCatatan() async {
+    final db = await openDB();
+    return await db.query('Catatan', orderBy: 'tanggal DESC, waktu DESC');
+  }
+
+  // ==========================================
+  // TAMBAHAN FUNGSI UNTUK JADWAL
+  // ==========================================
+
+  // Insert data jadwal baru
+  static Future<int> insertJadwal(Map<String, dynamic> data) async {
+    final db = await openDB();
+    return await db.insert('Jadwal', data);
+  }
+
+  // Ambil data jadwal, diurutkan dari tanggal terdekat (ASC)
+  static Future<List<Map<String, dynamic>>> getJadwal() async {
+    final db = await openDB();
+    return await db.query('Jadwal', orderBy: 'tanggal ASC');
+  }
 }
