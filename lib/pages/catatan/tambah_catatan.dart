@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb; // Untuk cek platform web
+import 'dart:io' as io; // Untuk handle file di mobile
+import 'package:image_picker/image_picker.dart'; // Import package image_picker
 import '../../database/db_helper.dart';
 
 class TambahCatatanPage extends StatefulWidget {
@@ -11,15 +14,19 @@ class TambahCatatanPage extends StatefulWidget {
 class _TambahCatatanPageState extends State<TambahCatatanPage> {
   final Color primaryGreen = const Color(0xFF27AE60);
 
-  // 1. CONTROLLER UNTUK MENANGKAP INPUTAN TEKS
+  // CONTROLLER INPUTAN TEKS
   final TextEditingController _tanggalController = TextEditingController();
   final TextEditingController _waktuController = TextEditingController();
-  final TextEditingController _catatanController = TextEditingController();       // Untuk judul singkat, ex: "Urea 50 kg/ha"
+  final TextEditingController _catatanController = TextEditingController();       
   final TextEditingController _lokasiController = TextEditingController();
-  final TextEditingController _detailCatatanController = TextEditingController(); // Untuk teks panjang
+  final TextEditingController _detailCatatanController = TextEditingController(); 
 
-  // 2. VARIABLE UNTUK DROPDOWN AKTIVITAS
-  String? _selectedAktivitas = 'Pemupukan'; // Default value
+  // VARIABLE UNTUK IMAGE PICKER
+  XFile? _imageFile; // Menyimpan file gambar yang dipilih
+  final ImagePicker _picker = ImagePicker(); // Instance dari ImagePicker
+
+  // VARIABLE DROPDOWN AKTIVITAS
+  String? _selectedAktivitas = 'Pemupukan'; 
   final List<String> _listAktivitas = [
     'Penanaman', 
     'Penyiraman', 
@@ -28,7 +35,22 @@ class _TambahCatatanPageState extends State<TambahCatatanPage> {
     'Panen'
   ];
 
-  // Fungsi untuk memunculkan pemilih Tanggal
+  // Fungsi untuk memunculkan pemilih kamera / galeri
+  Future<void> _ambilFoto() async {
+    // Kamu bisa mengganti ImageSource.gallery menjadi ImageSource.camera jika ingin langsung buka kamera
+    final XFile? pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery, 
+      maxWidth: 1080, // Membatasi resolusi agar ukuran file tidak terlalu bengkak di database
+      maxHeight: 1080,
+    );
+
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = pickedFile;
+      });
+    }
+  }
+
   Future<void> _pilihTanggal() async {
     DateTime? picked = await showDatePicker(
       context: context,
@@ -38,13 +60,11 @@ class _TambahCatatanPageState extends State<TambahCatatanPage> {
     );
     if (picked != null) {
       setState(() {
-        // Format sederhana DD-MM-YYYY (Bisa disesuaikan pakai package intl nantinya)
         _tanggalController.text = "${picked.day}-${picked.month}-${picked.year}";
       });
     }
   }
 
-  // Fungsi untuk memunculkan pemilih Waktu
   Future<void> _pilihWaktu() async {
     TimeOfDay? picked = await showTimePicker(
       context: context,
@@ -52,15 +72,12 @@ class _TambahCatatanPageState extends State<TambahCatatanPage> {
     );
     if (picked != null) {
       setState(() {
-        // Format jam HH:MM
         _waktuController.text = "${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}";
       });
     }
   }
 
-  // 3. FUNGSI MENYIMPAN DATA KE SQLITE
   Future<void> _simpanData() async {
-    // Validasi sederhana, pastikan data penting tidak kosong
     if (_tanggalController.text.isEmpty || _catatanController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Tanggal dan Judul Catatan harus diisi!')),
@@ -68,33 +85,28 @@ class _TambahCatatanPageState extends State<TambahCatatanPage> {
       return;
     }
 
-    // Membungkus data sesuai struktur tabel SQLite di DBHelper
     Map<String, dynamic> dataCatatan = {
-      // id_user: 1, // Jika nanti ada fitur login, bisa dimasukkan id_user di sini
       'jenis_aktivitas': _selectedAktivitas,
       'catatan': _catatanController.text,
       'detail_catatan': _detailCatatanController.text,
       'lokasi': _lokasiController.text,
-      'tanggal': _tanggalController.text, // Idealnya format YYYY-MM-DD agar mudah di-sort
+      'tanggal': _tanggalController.text, 
       'waktu': _waktuController.text,
-      'foto': '', // Dikosongkan sementara sampai fitur kamera dibuat
+      // Menyimpan path string foto ke SQLite jika foto ada
+      'foto': _imageFile != null ? _imageFile!.path : '', 
       'created_at': DateTime.now().toString(),
     };
 
-    // Panggil fungsi insert dari DBHelper
     await DBHelper.insertCatatan(dataCatatan);
 
-    // Tampilkan notifikasi sukses
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Catatan berhasil disimpan!'), backgroundColor: Colors.green),
       );
-      // Kembali ke halaman sebelumnya
       Navigator.pop(context);
     }
   }
 
-  // WIDGET BANTUAN: LABEL
   Widget _buildLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
@@ -102,7 +114,6 @@ class _TambahCatatanPageState extends State<TambahCatatanPage> {
     );
   }
 
-  // WIDGET BANTUAN: TEXTFIELD
   Widget _buildTextField({required TextEditingController controller, String? hintText, int maxLines = 1, int? maxLength, bool readOnly = false, VoidCallback? onTap}) {
     return TextField(
       controller: controller,
@@ -136,7 +147,7 @@ class _TambahCatatanPageState extends State<TambahCatatanPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. TANGGAL & WAKTU (Bisa diklik muncul kalender/jam)
+            // TANGGAL & WAKTU
             Row(
               children: [
                 Expanded(
@@ -162,7 +173,7 @@ class _TambahCatatanPageState extends State<TambahCatatanPage> {
             ),
             const SizedBox(height: 20),
 
-            // 2. AKTIVITAS (Dropdown)
+            // AKTIVITAS
             _buildLabel("Aktivitas"),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -180,7 +191,6 @@ class _TambahCatatanPageState extends State<TambahCatatanPage> {
                           Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(color: primaryGreen, shape: BoxShape.circle),
-                            // Untuk sementara pakai icon yang sama, nanti bisa dibuat dinamis per jenis
                             child: const Icon(Icons.eco, color: Colors.white, size: 16), 
                           ),
                           const SizedBox(width: 12),
@@ -199,27 +209,27 @@ class _TambahCatatanPageState extends State<TambahCatatanPage> {
             ),
             const SizedBox(height: 20),
 
-            // 3. CATATAN SINGKAT
+            // CATATAN SINGKAT
             _buildLabel("Catatan"),
             _buildTextField(controller: _catatanController, hintText: "Misal: Urea 50 kg/ha"),
             const SizedBox(height: 20),
 
-            // 4. LOKASI
+            // LOKASI
             _buildLabel("Lokasi"),
             _buildTextField(controller: _lokasiController, hintText: "Misal: Sawah Blok B"),
             const SizedBox(height: 20),
 
-            // 5. DETAIL CATATAN (Teks Panjang)
+            // DETAIL CATATAN
             _buildLabel("Detail Catatan"),
             _buildTextField(controller: _detailCatatanController, hintText: "Ceritakan detail aktivitasmu di sini...", maxLines: 4, maxLength: 200),
             const SizedBox(height: 20),
 
-            // 6. FOTO
+            // FOTO (Sudah Diaktifkan)
             _buildLabel("Foto"),
             Row(
               children: [
                 InkWell(
-                  onTap: () {},
+                  onTap: _ambilFoto, // Hubungkan fungsi ambil foto di sini
                   child: Container(
                     height: 80, width: 120,
                     decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(12)),
@@ -238,14 +248,19 @@ class _TambahCatatanPageState extends State<TambahCatatanPage> {
                   borderRadius: BorderRadius.circular(12),
                   child: Container(
                     height: 80, width: 120, color: Colors.grey.shade200,
-                    child: const Icon(Icons.image, color: Colors.grey, size: 40), 
+                    // Logika kondisional menampilkan preview gambar atau icon default
+                    child: _imageFile == null
+                        ? const Icon(Icons.image, color: Colors.grey, size: 40)
+                        : kIsWeb
+                            ? Image.network(_imageFile!.path, fit: BoxFit.cover, width: 120, height: 80) // Untuk Web browser
+                            : Image.file(io.File(_imageFile!.path), fit: BoxFit.cover, width: 120, height: 80), // Untuk HP asli
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 40),
 
-            // 7. TOMBOL SIMPAN
+            // TOMBOL SIMPAN
             SizedBox(
               width: double.infinity,
               height: 56,
@@ -255,7 +270,7 @@ class _TambahCatatanPageState extends State<TambahCatatanPage> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   elevation: 0,
                 ),
-                onPressed: _simpanData, // MEMANGGIL FUNGSI SIMPAN KE SQLITE
+                onPressed: _simpanData, 
                 child: const Text("Simpan Catatan", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
               ),
             ),
