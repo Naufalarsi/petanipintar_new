@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'tambah_catatan.dart';
 
 class CatatanPage extends StatefulWidget {
   const CatatanPage({Key? key}) : super(key: key);
@@ -87,8 +88,10 @@ class _CatatanPageState extends State<CatatanPage> {
                   elevation: 0,
                 ),
                 onPressed: () {
-                  // TODO: Aksi untuk membuka form pengisian ke database
-                  print("Buka form pengisian catatan");
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const TambahCatatanPage()),
+                  );
                 },
                 icon: const Icon(Icons.add, color: Colors.white, size: 28),
                 label: const Text(

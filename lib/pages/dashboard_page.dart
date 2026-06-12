@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'catatan/catatan.dart';
+import 'catatan/tambah_catatan.dart';
+
 class DashboardPage extends StatefulWidget {
   const DashboardPage({Key? key}) : super(key: key);
 
@@ -44,10 +46,9 @@ class _DashboardPageState extends State<DashboardPage> {
                 subtitle: const Text("Catat aktivitas pemupukan, penyiraman, dll."),
                 onTap: () {
                   Navigator.pop(context); // Tutup bottom sheet
-                  // Pindah ke Halaman Catatan Blank
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const CatatanPage()),
+                    MaterialPageRoute(builder: (context) => const TambahCatatanPage()), // Nama class baru
                   );
                 },
               ),
