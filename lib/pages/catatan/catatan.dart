@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io' as io;
 import '../../database/db_helper.dart'; // Jalur naik 2 tingkat ke folder database
 import 'tambah_catatan.dart';
+import 'detail_catatan.dart'; // Jangan lupa import halaman detailnya
 
 class CatatanPage extends StatefulWidget {
   const CatatanPage({Key? key}) : super(key: key);
@@ -19,7 +20,7 @@ class _CatatanPageState extends State<CatatanPage> {
   Map<String, dynamic> _getAktivitasStyle(String jenis) {
     switch (jenis) {
       case 'Penanaman':
-        return {'icon': Icons.grass, 'color': Colors.green}; // Bisa diganti ikon benih/daun
+        return {'icon': Icons.grass, 'color': Colors.green}; // Menggunakan icon grass (valid)
       case 'Penyiraman':
         return {'icon': Icons.water_drop, 'color': const Color(0xFF4A90E2)};
       case 'Pemupukan':
@@ -27,7 +28,7 @@ class _CatatanPageState extends State<CatatanPage> {
       case 'Pengendalian Hama':
         return {'icon': Icons.bug_report, 'color': const Color(0xFFE57373)};
       case 'Panen':
-        return {'icon': Icons.gavel, 'color': Colors.orange}; // Bisa diganti ikon panen
+        return {'icon': Icons.gavel, 'color': Colors.orange}; 
       default:
         return {'icon': Icons.assignment, 'color': Colors.grey};
     }
@@ -209,44 +210,60 @@ class _CatatanPageState extends State<CatatanPage> {
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12.0),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(color: style['color'].withOpacity(0.1), shape: BoxShape.circle),
-                          child: Icon(style['icon'], color: style['color'], size: 24),
+                  // INI ADALAH KODE INKWELL YANG DITAMBAHKAN AGAR BISA DIKLIK
+                  child: InkWell( 
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DetailCatatanPage(catatanData: item), // Kirim data item ke detail
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(item['jenis_aktivitas'] ?? 'Aktivitas', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                              const SizedBox(height: 2),
-                              Text(item['catatan'] ?? '', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Colors.black54)),
-                              const SizedBox(height: 2),
-                              Text(item['lokasi'] ?? '', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: Colors.grey.shade400)),
-                            ],
+                      ).then((value) {
+                        // Ketika kembali dari halaman detail (setelah edit atau hapus), refresh data list utama
+                        if (value == true) {
+                          setState(() {});
+                        }
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(color: style['color'].withOpacity(0.1), shape: BoxShape.circle),
+                            child: Icon(style['icon'], color: style['color'], size: 24),
                           ),
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(item['waktu'] ?? '', style: TextStyle(color: Colors.grey.shade400, fontSize: 12, fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 4),
-                            Text(item['tanggal'] ?? '', style: TextStyle(color: Colors.grey.shade400, fontSize: 11)),
-                          ],
-                        )
-                      ],
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(item['jenis_aktivitas'] ?? 'Aktivitas', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                                const SizedBox(height: 2),
+                                Text(item['catatan'] ?? '', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Colors.black54)),
+                                const SizedBox(height: 2),
+                                Text(item['lokasi'] ?? '', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: Colors.grey.shade400)),
+                              ],
+                            ),
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(item['waktu'] ?? '', style: TextStyle(color: Colors.grey.shade400, fontSize: 12, fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 4),
+                              Text(item['tanggal'] ?? '', style: TextStyle(color: Colors.grey.shade400, fontSize: 11)),
+                            ],
+                          )
+                        ],
+                      ),
                     ),
                   ),
                 );
