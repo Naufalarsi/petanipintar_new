@@ -141,4 +141,16 @@ class DBHelper {
     final db = await openDB();
     return await db.query('Jadwal', orderBy: 'tanggal ASC');
   }
+
+  // Hapus catatan berdasarkan ID
+  static Future<int> deleteCatatan(int id) async {
+    final db = await openDB();
+    return await db.delete('Catatan', where: 'id_catatan = ?', whereArgs: [id]);
+  }
+
+  // Update/Edit catatan berdasarkan ID
+  static Future<int> updateCatatan(int id, Map<String, dynamic> data) async {
+    final db = await openDB();
+    return await db.update('Catatan', data, where: 'id_catatan = ?', whereArgs: [id]);
+  }
 }
