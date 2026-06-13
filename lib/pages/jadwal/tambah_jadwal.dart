@@ -50,7 +50,6 @@ class _TambahJadwalPageState extends State<TambahJadwalPage> {
       _catatanController.text = dataLama['catatan'] ?? '';
       _lokasiController.text = dataLama['lokasi'] ?? '';
       _detailCatatanController.text = dataLama['detail_catatan'] ?? '';
-      // Catatan: Kolom 'pengulangan' tidak ada di tabel Jadwal, jadi di-default 'Jangan ulangi'
     }
   }
 
@@ -64,7 +63,6 @@ class _TambahJadwalPageState extends State<TambahJadwalPage> {
     );
     if (picked != null) {
       setState(() {
-        // Format disesuaikan dengan gambar: contoh "21 Mei 2026"
         List<String> banyuanBulan = [
           'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
           'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
@@ -104,18 +102,18 @@ class _TambahJadwalPageState extends State<TambahJadwalPage> {
                 onTap: () {
                   setState(() {
                     _selectedPengulangan = value;
-                  });
-                  Navigator.pop(context);
-                },
-              );
-            }).toList(),
-          ),
-        );
-      },
-    );
-  }
-
-  // Fungsi Simpan ke SQLite (Menyesuaikan dengan kolom tabel Jadwal di DBHelper)
+                    });
+                    Navigator.pop(context);
+                  },
+                );
+              }).toList(),
+            ),
+          );
+        },
+      );
+    }
+  
+    // Fungsi Simpan ke SQLite (Menyesuaikan dengan kolom tabel Jadwal di DBHelper)
   Future<void> _simpanJadwal() async {
     if (_tanggalController.text.isEmpty || _catatanController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -123,10 +121,9 @@ class _TambahJadwalPageState extends State<TambahJadwalPage> {
       );
       return;
     }
-
-    // MAP DATA YANG STRUKTURNYA SESUAI DENGAN TABEL JADWAL DI DB_HELPER
+  
     Map<String, dynamic> dataJadwal = {
-      'id_user': 1, // Default ID User sementara jika belum ada sistem login kustom
+      'id_user': 1, 
       'jenis_aktivitas': _selectedAktivitas,
       'catatan': _catatanController.text,
       'detail_catatan': _detailCatatanController.text,
@@ -134,37 +131,56 @@ class _TambahJadwalPageState extends State<TambahJadwalPage> {
       'tanggal': _tanggalController.text,
       'waktu': _waktuController.text,
       'status': widget.jadwalUntukEdit != null 
-          ? widget.jadwalUntukEdit!['status'] // Jika edit, pakai status lama
-          : 'Belum Selesai', // Jika baru, isi status default 'Belum Selesai'
+          ? widget.jadwalUntukEdit!['status'] 
+          : 'Belum Selesai', 
       'created_at': widget.jadwalUntukEdit != null 
           ? widget.jadwalUntukEdit!['created_at'] 
           : DateTime.now().toString(),
     };
-
-    if (widget.jadwalUntukEdit != null) {
-      // MODE EDIT JADWAL
-      int idJadwal = widget.jadwalUntukEdit!['id_jadwal'];
-      // Catatan: Jika updateJadwal belum ada di db_helper, pastikan kamu menambahkannya nanti
-      await DBHelper.updateCatatan(idJadwal, dataJadwal); 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Jadwal berhasil diperbarui!'), backgroundColor: Colors.green),
-        );
-        Navigator.pop(context, true);
+  
+    // Tampilkan loading dialog sederhana agar user tahu proses sedang berjalan
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+  
+    try {
+      if (widget.jadwalUntukEdit != null) {
+        int idJadwal = widget.jadwalUntukEdit!['id_jadwal'];
+        await DBHelper.updateJadwal(idJadwal, dataJadwal); 
+      } else {
+        await DBHelper.insertJadwal(dataJadwal);
       }
-    } else {
-      // MODE SIMPAN JADWAL BARU (Fungsi insertJadwal sudah ada di db_helper-mu)
-      await DBHelper.insertJadwal(dataJadwal);
+  
+      // Tutup loading dialog
+      if (mounted) Navigator.pop(context);
+  
+      // Beri jeda 100 milidetik agar thread database selesai memproses data sepenuhnya
+      await Future.delayed(const Duration(milliseconds: 100));
+  
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Jadwal berhasil dijadwalkan!'), backgroundColor: Colors.green),
+          SnackBar(
+            content: Text(widget.jadwalUntukEdit != null ? 'Jadwal berhasil diperbarui!' : 'Jadwal berhasil dijadwalkan!'), 
+            backgroundColor: Colors.green
+          ),
         );
-        Navigator.pop(context, true);
+        Navigator.pop(context, true); // Kembali ke halaman utama dengan membawa sinyal refresh
+      }
+    } catch (e) {
+      // Tutup loading dialog jika error
+      if (mounted) Navigator.pop(context);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal operasi database: $e'), backgroundColor: Colors.red),
+        );
       }
     }
   }
 
-  // WIDGET BANTUAN: Label Form (FontWeight.w600 menggantikan semibold)
+  // WIDGET BANTUAN: Label Form
   Widget _buildLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0, top: 16.0),
@@ -195,7 +211,7 @@ class _TambahJadwalPageState extends State<TambahJadwalPage> {
       decoration: InputDecoration(
         hintText: hintText,
         prefixIcon: prefixIcon,
-        counterText: "", // Menyembunyikan counter bawaan TextField di bawah border
+        counterText: "", 
         hintStyle: const TextStyle(color: Colors.black38, fontWeight: FontWeight.w400),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5)),
@@ -316,7 +332,7 @@ class _TambahJadwalPageState extends State<TambahJadwalPage> {
               prefixIcon: Icon(Icons.location_on, color: primaryGreen, size: 22),
             ),
 
-            // 5. DETAIL CATATAN (Counter text kustom di dalam border)
+            // 5. DETAIL CATATAN
             _buildLabel("Detail Catatan"),
             Stack(
               children: [
@@ -342,7 +358,7 @@ class _TambahJadwalPageState extends State<TambahJadwalPage> {
               ],
             ),
 
-            // 6. PENGULANGAN (Tetap ada di UI agar sesuai Mockup Gambar)
+            // 6. PENGULANGAN
             _buildLabel("Pengulangan"),
             InkWell(
               onTap: _pilihPengulangan,

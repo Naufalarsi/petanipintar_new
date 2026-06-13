@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:io' as io;
 import '../../database/db_helper.dart'; 
 import 'tambah_catatan.dart';
 import 'detail_catatan.dart';
@@ -41,45 +40,52 @@ class _CatatanPageState extends State<CatatanPage> {
     _loadData(); // Ambil data saat halaman dibuka
   }
 
-  // FUNGSI 1: AMBIL DATA DARI DATABASE
+  // FUNGSI 1: AMBIL DATA DARI DATABASE (VERSI AMAN DARI DEADLOCK)
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     
-    // Jangan load db jika di web, karena sqflite tidak support web
-    final data = kIsWeb ? <Map<String, dynamic>>[] : await DBHelper.getCatatan();
-    
-    setState(() {
-      _allCatatan = data;
-      _filteredCatatan = data; // Awalnya tampilkan semua
-      _isLoading = false;
-    });
-    
-    _applyFilter(); // Terapkan filter jika ada state tersimpan
+    try {
+      final data = kIsWeb ? <Map<String, dynamic>>[] : await DBHelper.getCatatan();
+      
+      if (mounted) {
+        setState(() {
+          _allCatatan = data;
+          _filteredCatatan = data; // Awalnya tampilkan semua
+          _isLoading = false;
+        });
+        _applyFilter(); 
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat database catatan: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 
-  // FUNGSI 2: LOGIKA PINTAR SEARCH + FILTER (Gak Kerja 2 Kali!)
+  // FUNGSI 2: LOGIKA PINTAR SEARCH + FILTER
   void _applyFilter() {
+    if (!mounted) return;
     setState(() {
       _filteredCatatan = _allCatatan.where((item) {
-        // Cek Filter Kategori
         bool matchFilter = _selectedFilter == 'Semua Aktivitas' || item['jenis_aktivitas'] == _selectedFilter;
         
-        // Cek Pencarian (Search by catatan, lokasi, atau jenis aktivitas)
         String searchLower = _searchQuery.toLowerCase();
         bool matchSearch = _searchQuery.isEmpty || 
             (item['catatan']?.toString().toLowerCase().contains(searchLower) ?? false) ||
             (item['jenis_aktivitas']?.toString().toLowerCase().contains(searchLower) ?? false) ||
             (item['lokasi']?.toString().toLowerCase().contains(searchLower) ?? false);
 
-        // Hanya tampilkan jika KEDUANYA cocok
         return matchFilter && matchSearch;
       }).toList();
     });
   }
 
-  // FUNGSI 3: MEMUNCULKAN BOTTOM SHEET FILTER (Sesuai Desainmu)
+  // FUNGSI 3: MEMUNCULKAN BOTTOM SHEET FILTER
   void _showFilterBottomSheet() {
-    // Variable sementara agar tampilan di bottom sheet bisa berubah tanpa menutup sheet
     String tempFilter = _selectedFilter; 
 
     showModalBottomSheet(
@@ -87,14 +93,13 @@ class _CatatanPageState extends State<CatatanPage> {
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (context) {
-        return StatefulBuilder( // StatefulBuilder agar setstate di dalam bottom sheet bekerja
+        return StatefulBuilder(
           builder: (BuildContext context, StateSetter setModalState) {
             return Container(
               padding: const EdgeInsets.only(top: 24, left: 24, right: 24, bottom: 32),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // HEADER FILTER
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -107,7 +112,6 @@ class _CatatanPageState extends State<CatatanPage> {
                   ),
                   const SizedBox(height: 16),
                   
-                  // LIST PILIHAN FILTER
                   ..._kategoriAktivitas.map((kategori) {
                     bool isSelected = tempFilter == kategori;
                     var style = _getAktivitasStyle(kategori);
@@ -117,7 +121,7 @@ class _CatatanPageState extends State<CatatanPage> {
                       child: InkWell(
                         onTap: () {
                           setModalState(() {
-                            tempFilter = kategori; // Ubah pilihan sementara
+                            tempFilter = kategori; 
                           });
                         },
                         child: Container(
@@ -149,7 +153,6 @@ class _CatatanPageState extends State<CatatanPage> {
                   
                   const SizedBox(height: 24),
                   
-                  // TOMBOL TERAPKAN FILTER
                   SizedBox(
                     width: double.infinity,
                     height: 56,
@@ -159,7 +162,6 @@ class _CatatanPageState extends State<CatatanPage> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
                       onPressed: () {
-                        // Terapkan filter ke variabel utama, panggil fungsi pintar, lalu tutup
                         setState(() {
                           _selectedFilter = tempFilter;
                         });
@@ -178,7 +180,6 @@ class _CatatanPageState extends State<CatatanPage> {
     );
   }
 
-  // Fungsi bantuan untuk icon & warna
   Map<String, dynamic> _getAktivitasStyle(String jenis) {
     switch (jenis) {
       case 'Penanaman': return {'icon': Icons.grass, 'color': Colors.green};
@@ -196,18 +197,14 @@ class _CatatanPageState extends State<CatatanPage> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    // Jika database benar-benar kosong (Belum ada catatan sama sekali)
     if (_allCatatan.isEmpty) {
       return _buildBlankState(context);
     }
 
-    // Jika sudah ada data, tampilkan layar dengan fitur search & filter
     return _buildListState(context); 
   }
 
-  // =======================================================================
-  // LAYAR 1: TAMPILKAN KONDISI BLANK
-  // =======================================================================
+  // LAYAR 1: KONDISI BLANK
   Widget _buildBlankState(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -232,7 +229,15 @@ class _CatatanPageState extends State<CatatanPage> {
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(backgroundColor: primaryGreen, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), elevation: 0),
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const TambahCatatanPage())).then((_) => _loadData());
+                  Navigator.push(
+                    context, 
+                    MaterialPageRoute(builder: (context) => const TambahCatatanPage())
+                  ).then((value) async {
+                    if (value == true) {
+                      await Future.delayed(const Duration(milliseconds: 150));
+                      _loadData();
+                    }
+                  });
                 },
                 icon: const Icon(Icons.add, color: Colors.white, size: 28),
                 label: const Text("Tambah Catatan", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
@@ -245,9 +250,7 @@ class _CatatanPageState extends State<CatatanPage> {
     );
   }
 
-  // =======================================================================
-  // LAYAR 3: TAMPILKAN DAFTAR RIWAYAT (DENGAN SEARCH & FILTER)
-  // =======================================================================
+  // LAYAR 2: TAMPILKAN DAFTAR RIWAYAT
   Widget _buildListState(BuildContext context) {
     return Scaffold(
       backgroundColor: bgColor,
@@ -258,7 +261,6 @@ class _CatatanPageState extends State<CatatanPage> {
       ),
       body: Column(
         children: [
-          // KOMPONEN ATAS: SEARCH BAR & FILTER
           Container(
             color: Colors.white,
             padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
@@ -270,7 +272,6 @@ class _CatatanPageState extends State<CatatanPage> {
                       child: Container(
                         decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(12)),
                         child: TextField(
-                          // Memicu pencarian setiap kali huruf diketik
                           onChanged: (value) {
                             _searchQuery = value;
                             _applyFilter();
@@ -285,9 +286,8 @@ class _CatatanPageState extends State<CatatanPage> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    // TOMBOL CORONG FILTER
                     InkWell(
-                      onTap: _showFilterBottomSheet, // Panggil Bottom Sheet saat diklik
+                      onTap: _showFilterBottomSheet,
                       child: Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
@@ -300,19 +300,17 @@ class _CatatanPageState extends State<CatatanPage> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                // PILIHAN FILTER DROPDOWN MINI (Dibuat otomatis update labelnya)
                 Row(
                   children: [
                     _buildMiniDropdown(_selectedFilter, onTap: _showFilterBottomSheet),
                     const SizedBox(width: 10),
-                    _buildMiniDropdown("Bulan Ini"), // Placeholder untuk filter bulan jika diperlukan nanti
+                    _buildMiniDropdown("Bulan Ini"),
                   ],
                 ),
               ],
             ),
           ),
 
-          // CARD SUMMARY RINGKASAN
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
             child: Container(
@@ -344,7 +342,6 @@ class _CatatanPageState extends State<CatatanPage> {
             ),
           ),
 
-          // LIST DATA AKTIVITAS HASIL FILTER
           Expanded(
             child: _filteredCatatan.isEmpty 
               ? Center(
@@ -366,7 +363,7 @@ class _CatatanPageState extends State<CatatanPage> {
                         context,
                         MaterialPageRoute(builder: (context) => DetailCatatanPage(catatanData: item)),
                       ).then((value) {
-                        if (value == true) _loadData(); // Load data lagi jika kembali dari hapus/edit
+                        if (value == true) _loadData(); 
                       });
                     },
                     child: Container(
@@ -415,16 +412,25 @@ class _CatatanPageState extends State<CatatanPage> {
       ),
 
       floatingActionButton: FloatingActionButton(
-        backgroundColor: primaryGreen, elevation: 4, shape: const CircleBorder(),
+        backgroundColor: primaryGreen, 
+        elevation: 4, 
+        shape: const CircleBorder(),
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const TambahCatatanPage())).then((_) => _loadData());
+          Navigator.push(
+            context, 
+            MaterialPageRoute(builder: (context) => const TambahCatatanPage())
+          ).then((value) async {
+            if (value == true) {
+              await Future.delayed(const Duration(milliseconds: 150));
+              _loadData(); 
+            }
+          });
         },
         child: const Icon(Icons.add, color: Colors.white, size: 32),
       ),
     );
   }
 
-  // WIDGET BANTUAN: PILIHAN FILTER MINI (Bisa di-klik)
   Widget _buildMiniDropdown(String label, {VoidCallback? onTap}) {
     return InkWell(
       onTap: onTap,

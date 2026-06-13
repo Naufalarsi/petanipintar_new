@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import '../../database/db_helper.dart'; // Jalur naik 2 tingkat ke folder database, sesuaikan jika berbeda
-import 'tambah_jadwal.dart'; // Buka comment ini jika sudah ada file tambah jadwal
+import '../../database/db_helper.dart'; // Jalur database SQLite
+import 'tambah_jadwal.dart'; // Jalur halaman tambah
 
 class JadwalPage extends StatefulWidget {
   const JadwalPage({Key? key}) : super(key: key);
@@ -12,53 +12,78 @@ class JadwalPage extends StatefulWidget {
 
 class _JadwalPageState extends State<JadwalPage> {
   final Color primaryGreen = const Color(0xFF27AE60);
-  final Color bgColor = const Color(0xFFF2F5F7);
+  final Color bgColor = const Color(0xFFF8FAF9); // Background abu-abu sangat muda khas premium
+  
+  late Future<List<Map<String, dynamic>>> _jadwalFuture;
 
-  // Fungsi bantuan untuk mendapatkan icon & warna berdasarkan jenis kegiatan/jadwal
+  @override
+  void initState() {
+    super.initState();
+    _initData();
+  }
+
+  void _initData() {
+    _jadwalFuture = DBHelper.getJadwal();
+  }
+
+  void refreshData() {
+    setState(() {
+      _initData();
+    });
+  }
+
+  // Pemetaan Gaya Visual Dinamis (Ikon & Warna) Sesuai Mockup Gambar
   Map<String, dynamic> _getJadwalStyle(String kegiatan) {
     switch (kegiatan) {
-      case 'Penyiraman':
-        return {'icon': Icons.water_drop, 'color': const Color(0xFF4A90E2)};
       case 'Pemupukan':
-        return {'icon': Icons.eco, 'color': const Color(0xFF27AE60)};
+        return {'icon': Icons.bakery_dining_rounded, 'color': const Color(0xFF27AE60)}; // Ganti ke ikon pupuk/kantong jika ada
+      case 'Penyiraman':
+        return {'icon': Icons.opacity, 'color': const Color(0xFF4A90E2)};
       case 'Panen':
-        return {'icon': Icons.gavel, 'color': Colors.orange};
+        return {'icon': Icons.agriculture, 'color': const Color(0xFFF2994A)};
+      case 'Penanaman':
+        return {'icon': Icons.grass, 'color': const Color(0xFF2ECC71)};
+      case 'Pengendalian Hama':
+        return {'icon': Icons.bug_report, 'color': const Color(0xFFEB5757)};
       default:
-        return {'icon': Icons.calendar_today, 'color': Colors.blue};
+        return {'icon': Icons.assignment, 'color': Colors.grey};
     }
   }
 
-  // Fungsi untuk refresh state saat kembali dari halaman tambah
-  void refreshData() {
-    setState(() {});
+  // Fungsi pembantu untuk menghitung sisa hari secara simulasi (bisa dikembangkan nanti)
+  String _hitungSisaHari(String tanggal) {
+    if (tanggal.contains('21 Mei')) return '2 hari lagi';
+    if (tanggal.contains('22 Mei')) return '3 hari lagi';
+    if (tanggal.contains('24 Mei')) return '4 hari lagi';
+    if (tanggal.contains('01 Juni')) return '12 hari lagi';
+    return 'Segera';
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Map<String, dynamic>>>(
-      future: DBHelper.getJadwal(), // <-- Pastikan fungsi ini sudah ada di db_helper.dart kamu
+      future: _jadwalFuture,
       builder: (context, snapshot) {
-        // 1. JIKA DATA SEDANG DIMUAT
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
+            backgroundColor: Colors.white,
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
-        // 2. CEK JIKA DATA KOSONG ATAU DIJALANKAN DI WEB
+        // Jika data kosong atau berjalan di Web, tampilkan blank state bawaan lama
         if (!snapshot.hasData || snapshot.data!.isEmpty || kIsWeb) {
-          return _buildBlankState(context); // TAMPILKAN LAYAR KONDISI BLANK/KOSONG
+          return _buildBlankState(context); 
         }
 
-        // 3. JIKA DATA JADWAL TERSEDIA
         List<Map<String, dynamic>> dataJadwal = snapshot.data!;
-        return _buildListState(context, dataJadwal); // TAMPILKAN LAYAR UTAMA JADWAL
+        return _buildListState(context, dataJadwal); 
       },
     );
   }
 
   // =======================================================================
-  // LAYAR 1: TAMPILKAN KONDISI BLANK / KOSONG (Adopsi gaya catatan.dart)
+  // LAYAR 1: KONDISI BLANK / KOSONG (Sesuai Desain Gambar Pertama Anda)
   // =======================================================================
   Widget _buildBlankState(BuildContext context) {
     return Scaffold(
@@ -66,7 +91,7 @@ class _JadwalPageState extends State<JadwalPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text("Jadwal Kegiatan", style: TextStyle(color: Color.fromARGB(255, 0, 0, 0), fontWeight: FontWeight.bold, fontSize: 20)),
+        title: const Text("Tambah Jadwal", style: TextStyle(color: Color(0xFF27AE60), fontWeight: FontWeight.bold, fontSize: 20)),
         centerTitle: true,
         automaticallyImplyLeading: false,
       ),
@@ -75,17 +100,24 @@ class _JadwalPageState extends State<JadwalPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Pake icon kalender bawaan dulu sebagai placeholder, atau ganti asset gambarmu
-            Image.asset('assets/images/iconkalender.png', height: 220, errorBuilder: (c, e, s) => Icon(Icons.assignment, size: 150, color: Colors.grey[300])),
-            const SizedBox(height: 10),
-            Text("Belum ada jadwal", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: primaryGreen)),
+            const Spacer(flex: 2),
+            Image.asset(
+              'assets/images/iconkalender.png', 
+              height: 200, 
+              errorBuilder: (c, e, s) => const Icon(Icons.calendar_month, size: 150, color: Color(0xFF27AE60)),
+            ),
+            const SizedBox(height: 32),
+            const Text(
+              "Belum ada jadwal", 
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF27AE60)),
+            ),
             const SizedBox(height: 12),
             Text(
-              "Buat pengingat aktivitas pertanianmu\nagar perawatan tanaman tetap\nterjadwal dengan baik.",
+              "Mulai jadwalkan setiap aktivitas pertanianmu untuk hasil panen yang lebih optimal",
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 15, color: Colors.grey[600], height: 1.4, fontWeight: FontWeight.w500),
             ),
-            const SizedBox(height: 40),
+            const Spacer(flex: 2),
             SizedBox(
               width: double.infinity,
               height: 56,
@@ -96,19 +128,18 @@ class _JadwalPageState extends State<JadwalPage> {
                   elevation: 0,
                 ),
                 onPressed: () {
-                  // Jalur navigasi ke form tambah jadwal kamu
-                  print("Navigasi ke Tambah Jadwal");
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const TambahJadwalPage()),
-                  ).then((value) => refreshData());
-                  
+                  ).then((value) {
+                    if (value == true) refreshData();
+                  });
                 },
-                icon: const Icon(Icons.add, color: Colors.white, size: 28),
+                icon: const Icon(Icons.add, color: Colors.white, size: 24),
                 label: const Text("Tambah Jadwal", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
               ),
             ),
-            const SizedBox(height: 60),
+            const SizedBox(height: 32),
           ],
         ),
       ),
@@ -116,85 +147,282 @@ class _JadwalPageState extends State<JadwalPage> {
   }
 
   // =======================================================================
-  // LAYAR 2: TAMPILKAN LAYOUT ASLI JADWAL (Silakan sesuaikan isi Column-nya)
+  // LAYAR 2: TAMPILKAN LAYOUT UTAMA JADWAL & PENGINGAT (Sama Persis Mockup)
   // =======================================================================
   Widget _buildListState(BuildContext context, List<Map<String, dynamic>> listData) {
+    // Hitung ringkasan data statis/dinamis untuk diletakkan di card atas
+    int totalAktif = listData.length;
+    int akanDatang = listData.where((e) => e['status'] == 'Belum Selesai').length;
+
     return Scaffold(
       backgroundColor: bgColor,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text("Jadwal Kegiatan", style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 20)),
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-      ),
-      body: Column(
+      body: Stack(
         children: [
-          // -----------------------------------------------------------------
-          // Taruh Layout Atas Aslimu di sini (Misal: Kalender horizontal / Filter)
-          // -----------------------------------------------------------------
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
-            child: const Center(
-              child: Text("Tempat Kalender Horizontal / Filter Jadwal Aslimu"),
-            ),
-          ),
-
-          // -----------------------------------------------------------------
-          // LIST DATA JADWAL UTAMA (Desain Card Aslimu masukkan ke sini)
-          // -----------------------------------------------------------------
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 80), // Padding bawah 80 biar gak ketutupan FAB Global
-              itemCount: listData.length,
-              itemBuilder: (context, index) {
-                var item = listData[index];
-                var style = _getJadwalStyle(item['kegiatan'] ?? ''); // Sesuaikan key map dari database-mu
-
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12.0),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(color: style['color'].withOpacity(0.1), shape: BoxShape.circle),
-                          child: Icon(style['icon'], color: style['color'], size: 24),
+          SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 100), // Spasi agar item paling bawah tidak tertutup FAB
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 1. HEADER DENGAN GAMBAR BACKGROUND SAWAH
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      height: 240,
+                      width: double.infinity,
+                      decoration: const BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage('assets/images/bg_sawah.png'), // Pastikan file gambar ada di aset kamu
+                          fit: BoxFit.cover,
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
+                      ),
+                      child: Container(
+                        color: Colors.black.withOpacity(0.15), // Overlay tipis agar teks mudah dibaca
+                        padding: const EdgeInsets.only(top: 60, left: 24, right: 24),
+                        child: const Column(
+                          children: [
+                            Text(
+                              "Jadwal dan Pengingat",
+                              style: TextStyle(color: Color(0xFF27AE60), fontSize: 24, fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(height: 6),
+                            Text(
+                              "Kelola jadwal kegiatan pertanianmu\ndan dapatkan pengingat otomatis",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    
+                    // 2. TIGA KARTU STATISTIK (MELAYANG MEMOTONG HEADER)
+                    Positioned(
+                      bottom: -40,
+                      left: 16,
+                      right: 16,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _buildStatCard("Jadwal Aktif", totalAktif.toString(), const Color(0xFF27AE60)),
+                          _buildStatCard("Akan Datang", akanDatang.toString(), const Color(0xFFF2994A)),
+                          _buildStatCard("Selesai", "12", const Color(0xFF27AE60)), // Nilai statis contoh dari gambar mockup
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+
+                const SizedBox(height: 64), // Memberikan ruang pasca overlap kartu statistik
+
+                // 3. SUB-JUDUL SECTION "Jadwal Aktif"
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Jadwal Aktif",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                      ),
+                      TextButton.icon(
+                        onPressed: () {},
+                        icon: const Text("Lihat Semua", style: TextStyle(color: Color(0xFF27AE60), fontWeight: FontWeight.bold, fontSize: 14)),
+                        label: const Icon(Icons.arrow_forward_ios, color: Color(0xFF27AE60), size: 14),
+                      )
+                    ],
+                  ),
+                ),
+
+                // 4. DAFTAR LIST KARTU JADWAL PERTANIAN
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: listData.length,
+                  itemBuilder: (context, index) {
+                    var item = listData[index];
+                    var style = _getJadwalStyle(item['jenis_aktivitas'] ?? '');
+                    String sisaHari = _hitungSisaHari(item['tanggal'] ?? '');
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 14),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 14,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(item['kegiatan'] ?? 'Kegiatan', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                              const SizedBox(height: 2),
-                              Text(item['keterangan'] ?? '', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Colors.black54)),
+                              // Ikon Bundar Kegiatan Utama
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: style['color'],
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(style['icon'], color: Colors.white, size: 28),
+                              ),
+                              const SizedBox(width: 16),
+                              
+                              // Detail Info Konten (Judul & Catatan Pendek)
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item['jenis_aktivitas'] ?? 'Aktivitas',
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      (item['catatan'] != null && item['catatan'].toString().isNotEmpty) 
+                                          ? item['catatan'] 
+                                          : (item['lokasi'] ?? 'Sawah'),
+                                      style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13, color: Colors.grey),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              
+                              // Switch Toggle Kustom (On / Off)
+                              Transform.scale(
+                                scale: 0.85,
+                                child: Switch(
+                                  value: true, // Default diset aktif sesuai gambar mockup
+                                  activeColor: Colors.white,
+                                  activeTrackColor: const Color(0xFF2ECC71),
+                                  onChanged: (bool value) {},
+                                ),
+                              )
                             ],
                           ),
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(item['jam'] ?? '', style: TextStyle(color: Colors.grey.shade400, fontSize: 12, fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 4),
-                            Text(item['tanggal'] ?? '', style: TextStyle(color: Colors.grey.shade400, fontSize: 11)),
-                          ],
-                        )
-                      ],
-                    ),
-                  ),
-                );
-              },
+                          const SizedBox(height: 12),
+                          const Divider(height: 1, color: Color(0xFFF2F2F2)),
+                          const SizedBox(height: 12),
+                          
+                          // Baris Informasi Waktu Pelaksanaan & Badge Sisa Hari
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.calendar_today_outlined, size: 14, color: Colors.grey),
+                                  const SizedBox(width: 6),
+                                  Text(item['tanggal'] ?? '', style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500)),
+                                  const SizedBox(width: 14),
+                                  const Icon(Icons.access_time_rounded, size: 14, color: Colors.grey),
+                                  const SizedBox(width: 4),
+                                  Text(item['waktu'] ?? '', style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500)),
+                                ],
+                              ),
+                              
+                              // Badge Status "X hari lagi"
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: sisaHari.contains('2') || sisaHari.contains('3')
+                                      ? const Color(0xFFE8F8EE) 
+                                      : const Color(0xFFFDF2E9),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  sisaHari,
+                                  style: TextStyle(
+                                    fontSize: 11, 
+                                    fontWeight: FontWeight.bold, 
+                                    color: sisaHari.contains('2') || sisaHari.contains('3')
+                                        ? const Color(0xFF27AE60)
+                                        : const Color(0xFFE28743)
+                                  ),
+                                ),
+                              )
+                            ],
+                          )
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
+          ),
+          
+          // // 5. FLOATING ACTION BUTTON (FAB) HIJAU BULAT BESAR
+          // Positioned(
+          //   bottom: 24,
+          //   right: 24,
+          //   child: SizedBox(
+          //     width: 64,
+          //     height: 64,
+          //     child: FloatingActionButton(
+          //       backgroundColor: primaryGreen,
+          //       elevation: 4,
+          //       shape: const CircleBorder(),
+          //       onPressed: () {
+          //         Navigator.push(
+          //           context,
+          //           MaterialPageRoute(builder: (context) => const TambahJadwalPage()),
+          //         ).then((value) {
+          //           if (value == true) refreshData();
+          //         });
+          //       },
+          //       child: const Icon(Icons.add, color: Colors.white, size: 36),
+          //     ),
+          //   ),
+          // )
+        ],
+      ),
+    );
+  }
+
+  // Widget Pembantu Pembuat Komponen Kartu Statistik Atas
+  Widget _buildStatCard(String title, String count, Color iconColor) {
+    return Container(
+      width: 105,
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ]
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            title == "Jadwal Aktif" 
+                ? Icons.calendar_month 
+                : title == "Akan Datang" 
+                    ? Icons.access_time_filled 
+                    : Icons.check_circle_outline, 
+            color: iconColor, 
+            size: 24
+          ),
+          const SizedBox(height: 6),
+          Text(
+            count, 
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)
+          ),
+          const SizedBox(height: 2),
+          Text(
+            title, 
+            style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w500)
           ),
         ],
       ),

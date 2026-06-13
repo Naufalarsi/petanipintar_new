@@ -154,7 +154,7 @@ class DBHelper {
     return await db.update('Catatan', data, where: 'id_catatan = ?', whereArgs: [id]);
   }
 
-  // Update/Edit jadwal berdasarkan ID jadwal
+  // Tambahan fungsi untuk mengupdate data Jadwal berdasarkan ID
   static Future<int> updateJadwal(int id, Map<String, dynamic> data) async {
     final db = await openDB();
     return await db.update('Jadwal', data, where: 'id_jadwal = ?', whereArgs: [id]);
