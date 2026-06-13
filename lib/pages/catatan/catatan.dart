@@ -411,23 +411,23 @@ class _CatatanPageState extends State<CatatanPage> {
         ],
       ),
 
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: primaryGreen, 
-        elevation: 4, 
-        shape: const CircleBorder(),
-        onPressed: () {
-          Navigator.push(
-            context, 
-            MaterialPageRoute(builder: (context) => const TambahCatatanPage())
-          ).then((value) async {
-            if (value == true) {
-              await Future.delayed(const Duration(milliseconds: 150));
-              _loadData(); 
-            }
-          });
-        },
-        child: const Icon(Icons.add, color: Colors.white, size: 32),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   backgroundColor: primaryGreen, 
+      //   elevation: 4, 
+      //   shape: const CircleBorder(),
+      //   onPressed: () {
+      //     Navigator.push(
+      //       context, 
+      //       MaterialPageRoute(builder: (context) => const TambahCatatanPage())
+      //     ).then((value) async {
+      //       if (value == true) {
+      //         await Future.delayed(const Duration(milliseconds: 150));
+      //         _loadData(); 
+      //       }
+      //     });
+      //   },
+      //   child: const Icon(Icons.add, color: Colors.white, size: 32),
+      // ),
     );
   }
 

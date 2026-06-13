@@ -126,6 +126,18 @@ class DBHelper {
     return await db.query('Catatan', orderBy: 'tanggal DESC, waktu DESC');
   }
 
+  // Hapus catatan berdasarkan ID
+  static Future<int> deleteCatatan(int id) async {
+    final db = await openDB();
+    return await db.delete('Catatan', where: 'id_catatan = ?', whereArgs: [id]);
+  }
+
+  // Update/Edit catatan berdasarkan ID
+  static Future<int> updateCatatan(int id, Map<String, dynamic> data) async {
+    final db = await openDB();
+    return await db.update('Catatan', data, where: 'id_catatan = ?', whereArgs: [id]);
+  }
+
   // ==========================================
   // TAMBAHAN FUNGSI UNTUK JADWAL
   // ==========================================
@@ -142,22 +154,17 @@ class DBHelper {
     return await db.query('Jadwal', orderBy: 'tanggal ASC');
   }
 
-  // Hapus catatan berdasarkan ID
-  static Future<int> deleteCatatan(int id) async {
-    final db = await openDB();
-    return await db.delete('Catatan', where: 'id_catatan = ?', whereArgs: [id]);
-  }
-
-  // Update/Edit catatan berdasarkan ID
-  static Future<int> updateCatatan(int id, Map<String, dynamic> data) async {
-    final db = await openDB();
-    return await db.update('Catatan', data, where: 'id_catatan = ?', whereArgs: [id]);
-  }
-
   // Tambahan fungsi untuk mengupdate data Jadwal berdasarkan ID
   static Future<int> updateJadwal(int id, Map<String, dynamic> data) async {
     final db = await openDB();
     return await db.update('Jadwal', data, where: 'id_jadwal = ?', whereArgs: [id]);
   }
 
+  // ========================================================
+  // BARU: FUNGSI UNTUK MENGHAPUS DATA JADWAL BERDASARKAN ID
+  // ========================================================
+  static Future<int> deleteJadwal(int id) async {
+    final db = await openDB();
+    return await db.delete('Jadwal', where: 'id_jadwal = ?', whereArgs: [id]);
+  }
 }
