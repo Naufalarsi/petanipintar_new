@@ -1,8 +1,38 @@
 import 'package:flutter/material.dart';
 import 'profil_saya.dart';
+import 'lahan.dart';
+import 'pengaturan.dart';
+import 'bantuan.dart';
 
 class ProfilPage extends StatelessWidget {
   const ProfilPage({Key? key}) : super(key: key);
+
+// Fungsi memunculkan pop-up konfirmasi keluar
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text("Keluar Akun", style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text("Apakah Anda yakin ingin keluar dari aplikasi Petani Pintar?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context), 
+            child: const Text("Batal", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+            onPressed: () {
+              Navigator.pop(context); // Tutup dialog
+              // TODO: Aksi hapus session & kembali ke halaman Login/Welcome
+              print("Proses Logout...");
+            },
+            child: const Text("Ya, Keluar", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -137,21 +167,30 @@ class ProfilPage extends StatelessWidget {
                             title: "Lahan Saya",
                             subtitle: "Kelola data lahan yang dimiliki",
                             iconColor: primaryGreen,
-                            onTap: () {},
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const LahanPage()),
+                              );
+                            },
                           ),
                           _buildMenuCard(
                             icon: Icons.settings_outlined,
                             title: "Pengaturan",
                             subtitle: "Notifikasi, bahasa, dan lainnya",
                             iconColor: primaryGreen,
-                            onTap: () {},
+                            onTap: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => const PengaturanPage()));
+                            },
                           ),
                           _buildMenuCard(
                             icon: Icons.help_outline,
                             title: "Bantuan & Panduan",
                             subtitle: "Pusat bantuan dan cara penggunaan",
                             iconColor: primaryGreen,
-                            onTap: () {},
+                            onTap: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => const BantuanPage()));
+                            },
                           ),
                           _buildMenuCard(
                             icon: Icons.logout,
@@ -159,9 +198,10 @@ class ProfilPage extends StatelessWidget {
                             subtitle: "Keluar dari akun anda",
                             iconColor: Colors.red,
                             titleColor: Colors.red,
-                            onTap: () {},
-                          ),
-                        ],
+                            onTap: () {
+                              _showLogoutDialog(context); // Panggil fungsi pop-up
+                            },
+                          ),                        ],
                       ),
                     ),
 
