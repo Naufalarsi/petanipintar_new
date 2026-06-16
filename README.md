@@ -2,10 +2,10 @@ Petani Pintar
 
 Kelompok Mamboo
 
-23311120_Galih Saputra
-23311018_Rafi Naufal Arsi
-23311136_Juanda Saputra
-25371010P_Gusti Amalia
+1. 23311120_Galih Saputra
+2. 23311018_Rafi Naufal Arsi
+3. 23311136_Juanda Saputra
+4. 25371010P_Gusti Amalia
 
 A few resources to get you started if this is your first Flutter project:
 
