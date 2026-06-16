@@ -1,10 +1,11 @@
-# petanipintar_baru
+Petani Pintar
 
-A new Flutter project.
+Kelompok Mamboo
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
+23311120_Galih Saputra
+23311018_Rafi Naufal Arsi
+23311136_Juanda Saputra
+25371010P_Gusti Amalia
 
 A few resources to get you started if this is your first Flutter project:
 
