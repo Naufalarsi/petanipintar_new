@@ -7,7 +7,7 @@ Kelompok Mamboo
 3. 23311136_Juanda Saputra
 4. 25371010P_Gusti Amalia
 
-A few resources to get you started if this is your first Flutter project:
+Aplikasi monitoring & pencatatan pertanian
 
 - [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
 - [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
